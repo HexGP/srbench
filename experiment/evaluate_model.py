@@ -4,7 +4,11 @@ import pandas as pd
 from sklearn.base import clone
 from sklearn.experimental import enable_halving_search_cv # noqa
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score  
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+try:
+    from sklearn.metrics import mean_absolute_percentage_error
+except ImportError:
+    mean_absolute_percentage_error = None  # added in sklearn 0.24
 from sklearn.model_selection import train_test_split
 import warnings
 import time
@@ -212,12 +216,32 @@ def evaluate_model(
         if scale_y:
             y_pred = sc_y.inverse_transform(y_pred)
 
-        for score, scorer in [('mse',mean_squared_error),
-                              ('mae',mean_absolute_error),
-                              ('r2', r2_score)
-                             ]:
-            results[score + '_' + fold] = scorer(target, y_pred) 
-    
+        scorers = [
+            ('mse', mean_squared_error),
+            ('mae', mean_absolute_error),
+            ('r2', r2_score),
+        ]
+        if mean_absolute_percentage_error is not None:
+            scorers.append(('mape', mean_absolute_percentage_error))
+        for score, scorer in scorers:
+            try:
+                val = scorer(target, y_pred)
+                # MAPE can be inf/nan if target has zeros; store None so JSON is valid
+                if score == 'mape' and (val is None or not np.isfinite(val)):
+                    results[score + '_' + fold] = None
+                else:
+                    results[score + '_' + fold] = val
+            except Exception:
+                results[score + '_' + fold] = None
+
+    if mean_absolute_percentage_error is None:
+        results['mape_train'] = None
+        results['mape_test'] = None
+
+    # RMSE = sqrt(MSE), saved so you can read it directly from JSON
+    results['rmse_train'] = float(np.sqrt(results['mse_train'])) if results.get('mse_train') is not None else None
+    results['rmse_test'] = float(np.sqrt(results['mse_test'])) if results.get('mse_test') is not None else None
+
     # simplicity
     results['simplicity'] = simplicity(results['symbolic_model'], feature_names)
 

@@ -93,10 +93,12 @@ if __name__ == '__main__':
     if args.DATASET_DIR.endswith('.tsv.gz'):
         datasets = [args.DATASET_DIR]
     elif args.DATASET_DIR.endswith('*'):
-        print('capturing glob',args.DATASET_DIR+'/*.tsv.gz')
-        datasets = glob(args.DATASET_DIR+'*/*.tsv.gz')
+        glob_pattern = os.path.join(args.DATASET_DIR.rstrip('*'), '*', '*.tsv.gz')
+        print('capturing glob', glob_pattern)
+        datasets = glob(glob_pattern)
     else:
-        datasets = glob(args.DATASET_DIR+'/*/*.tsv.gz')
+        glob_pattern = os.path.join(args.DATASET_DIR, '*', '*.tsv.gz')
+        datasets = glob(glob_pattern)
     print('found',len(datasets),'datasets')
 
     #####################################################
@@ -131,21 +133,23 @@ if __name__ == '__main__':
                 and any([n in dataset for n in ['feynman', 'strogatz']])
                ):
                 continue
-            # grab regression datasets
-            metadata = load(
-                open('/'.join(dataset.split('/')[:-1])+'/metadata.yaml','r'),
-                    Loader=Loader)
+            # grab regression datasets (use os.path so paths work on Windows)
+            dataset_dir = os.path.dirname(dataset)
+            metadata_path = os.path.join(dataset_dir, 'metadata.yaml')
+            metadata = load(open(metadata_path, 'r'), Loader=Loader)
             if metadata['task'] != 'regression':
                 continue
-            
-            dataname = dataset.split('/')[-1].split('.tsv.gz')[0]
-            results_path = '/'.join([args.RDIR, dataname]) + '/'
+
+            dataname = os.path.basename(dataset).replace('.tsv.gz', '')
+            results_path = os.path.join(args.RDIR, dataname)
+            if not results_path.endswith(os.sep):
+                results_path = results_path + os.sep
             if not os.path.exists(results_path):
                 os.makedirs(results_path)
                 
             for ml in learners:
-                save_file = (results_path + '/' + dataname + '_' + ml + '_' 
-                             + str(random_state))
+                save_file = os.path.join(results_path.rstrip(os.sep),
+                                         dataname + '_' + ml + '_' + str(random_state))
                 # if updated, check if json file exists (required)
                 if ('updated' in suffix 
                     or args.SCRIPT.startswith('fix_')):
@@ -154,8 +158,8 @@ if __name__ == '__main__':
                         continue
 
                 if not args.NOSKIPS:
-                    save_file = (results_path + '/' + dataname + '_' + ml + '_' 
-                                 + str(random_state))
+                    save_file = os.path.join(results_path.rstrip(os.sep),
+                                             dataname + '_' + ml + '_' + str(random_state))
                     if args.Y_NOISE > 0:
                         save_file += '_target-noise'+str(args.Y_NOISE)
                     if args.X_NOISE > 0:
@@ -167,7 +171,7 @@ if __name__ == '__main__':
                         jobs_w_results.append([save_file,'exists'])
                         continue
                     # check if there is already a queued job for this experiment
-                    if save_file.split('/')[-1] in current_jobs:
+                    if os.path.basename(save_file) in current_jobs:
                         queued_jobs.append([save_file,'queued'])
                         continue
 

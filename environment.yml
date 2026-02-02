@@ -1,0 +1,32 @@
+# Conda environment for SRBench experiments (run analyze.py, evaluate_model.py)
+# Single env: create with conda env create -f environment.yml, then conda activate srbench
+# No need for per-algorithm envs or requirements.txt for normal use.
+
+name: srbench
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.8,<3.12
+  - scikit-learn
+  - pandas
+  - numpy
+  - pyyaml
+  - sympy
+  - joblib
+  - matplotlib
+  - seaborn
+  - pytest
+  - pip
+  # Pip packages (benchmark + pip-installable algorithms in one env)
+  - pip:
+    - pmlb>=1.0.1
+    - pytest-order
+    - gplearn
+    - git+https://github.com/lacava/ffx
+    - DistanceClassifier
+    - feyn>=3.0.1
+    - geneticengine
+    - deap
+  # Optional: uncomment to run PySR (can conflict with some Python versions)
+  # - pysr

@@ -1,0 +1,11 @@
+# Pip-only fallback: use when you already have a conda env and only want to add deps.
+# Prefer: conda env create -f environment.yml (installs everything in one env).
+
+pmlb>=1.0.1
+pytest-order
+gplearn
+git+https://github.com/lacava/ffx
+DistanceClassifier
+feyn>=3.0.1
+geneticengine
+deap

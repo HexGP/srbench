@@ -1,0 +1,23 @@
+dataset: enb_heating
+description: ENB2012 Energy Efficiency - Heating Load. 8 building features, single target.
+task: regression
+target:
+  type: continuous
+  description: Heating load
+features:
+  - name: X1
+    type: continuous
+  - name: X2
+    type: continuous
+  - name: X3
+    type: continuous
+  - name: X4
+    type: continuous
+  - name: X5
+    type: continuous
+  - name: X6
+    type: continuous
+  - name: X7
+    type: continuous
+  - name: X8
+    type: continuous
