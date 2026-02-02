@@ -65,7 +65,8 @@ class AIFeynmanRegressor(BaseEstimator, RegressorMixin):
             )
             
             # Extract best model from results
-            # AI-Feynman saves results in results/solution_{filename} relative to current directory
+            # AI-Feynman saves results in results/solution_{filename_orig} relative to current directory
+            # filename_orig is the original filename passed (before any _train suffix)
             results_file = os.path.join(self.temp_dir, 'results', f'solution_{self.filename}')
             
             if os.path.exists(results_file):

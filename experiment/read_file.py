@@ -12,6 +12,24 @@ def read_file(filename, label='target', use_dataframe=True, sep=None):
     print('compression:',compression)
     print('filename:',filename)
 
+    # Auto-detect separator: if filename contains 'tsv', use tab; otherwise try to detect
+    if sep is None:
+        if 'tsv' in filename.lower():
+            sep = '\t'
+        else:
+            # Try to detect separator from first line
+            if compression == 'gzip':
+                import gzip
+                with gzip.open(filename, 'rt') as f:
+                    first_line = f.readline()
+            else:
+                with open(filename, 'r') as f:
+                    first_line = f.readline()
+            if '\t' in first_line:
+                sep = '\t'
+            else:
+                sep = None  # Let pandas auto-detect
+
     input_data = pd.read_csv(filename, sep=sep, compression=compression)
      
     # clean up column names

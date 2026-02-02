@@ -16,8 +16,10 @@ est = BSR(
           alpha1= 0.4, 
           alpha2= 0.4, 
           beta= -1, 
-          disp=False, 
-          max_time=2*60*60)
+          disp=False)
+# Set max_time as attribute if supported
+if hasattr(est, 'max_time'):
+    est.max_time = 2*60*60
 
 def complexity(est):
     return est.complexity()

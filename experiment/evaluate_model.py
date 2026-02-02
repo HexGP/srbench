@@ -310,12 +310,23 @@ if __name__ == '__main__':
     args = parser.parse_args()
     set_env_vars(args.n_jobs)
     # import algorithm 
-    print('import from','methods.'+args.ALG+'.regressor')
-    algorithm = importlib.__import__('methods.'+args.ALG+'.regressor',
-                                     globals(),
-                                     locals(),
-                                     ['*']
-                                    )
+    # Tuned methods are imported directly, others use .regressor
+    if args.ALG.startswith('tuned.'):
+        import_path = 'methods.'+args.ALG
+        print('import from', import_path)
+        algorithm = importlib.__import__(import_path,
+                                         globals(),
+                                         locals(),
+                                         ['*']
+                                        )
+    else:
+        import_path = 'methods.'+args.ALG+'.regressor'
+        print('import from', import_path)
+        algorithm = importlib.__import__(import_path,
+                                         globals(),
+                                         locals(),
+                                         ['*']
+                                        )
 
     print('algorithm:',algorithm.est)
 
