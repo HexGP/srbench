@@ -323,10 +323,10 @@ if __name__ == '__main__':
         import_path = 'methods.'+args.ALG+'.regressor'
         print('import from', import_path)
         algorithm = importlib.__import__(import_path,
-                                         globals(),
-                                         locals(),
-                                         ['*']
-                                        )
+                                     globals(),
+                                     locals(),
+                                     ['*']
+                                    )
 
     print('algorithm:',algorithm.est)
 
