@@ -83,8 +83,8 @@ def evaluate_model(
         true_model = get_sym_model(dataset)
     # generate train/test split
     X_train, X_test, y_train, y_test = train_test_split(features, labels,
-                                                    train_size=0.75,
-                                                    test_size=0.25,
+                                                    train_size=0.80,
+                                                    test_size=0.20,
                                                     random_state=random_state)
 
     # time limits

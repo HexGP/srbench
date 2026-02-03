@@ -1,6 +1,6 @@
 #!/bin/bash
 # Commands to run AI-Feynman on Agriculture datasets (0.01 sample) with SRBench
-# Data split: 80/20 train/test (SRBench uses 75/25 internally, but random_state ensures reproducibility)
+# Data split: 80/20 train/test (SRBench uses 80/20 split internally, random_state ensures reproducibility)
 # Random state: Uses SRBench's seed list (seeds.py) for consistency
 # Note: Uses Option 2 - merged datasets with all features, single-target, 0.01 sample fraction
 

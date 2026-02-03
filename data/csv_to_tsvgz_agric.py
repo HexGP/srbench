@@ -17,8 +17,8 @@ DATA_AGRIC = os.path.join(SRB, "data_agric")
 
 # Configuration
 SAMPLE_FRACTION = 0.1  # Can be changed to 0.01 for smaller dataset
-RANDOM_STATE_SAMPLE = 100  # For sampling
-RANDOM_STATE_SPLIT = 100  # For train/test split (not used here, but for reference)
+RANDOM_STATE_SAMPLE = 42  # For sampling (matching codes/Agriculture/mtr_ginn_agric_sym.py line 30-31)
+RANDOM_STATE_SPLIT = 100  # For train/test split (not used here, but for reference - matches codes/Agriculture/mtr_ginn_agric_sym.py line 306)
 
 # Target columns (will create separate datasets for each)
 # Note: Sample fraction will be prefixed to dataset names (e.g., agric_01_sustainability for 0.1)

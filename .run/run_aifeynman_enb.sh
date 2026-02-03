@@ -1,6 +1,6 @@
 #!/bin/bash
 # Commands to run AI-Feynman on ENB datasets with SRBench
-# Data split: 80/20 train/test (SRBench uses 75/25 internally, but random_state ensures reproducibility)
+# Data split: 80/20 train/test (SRBench uses 80/20 split internally, random_state ensures reproducibility)
 # Random state: Uses SRBench's seed list (seeds.py) for consistency
 
 # Create tmux session if it doesn't exist
