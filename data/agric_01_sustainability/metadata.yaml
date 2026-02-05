@@ -1,5 +1,5 @@
 dataset: agric_01_sustainability
-description: Agriculture dataset - Sustainability_Score. 15 features, single target. Sample fraction: 0.1.
+description: "Agriculture dataset - Sustainability_Score. 15 features, single target. Sample fraction: 0.1."
 task: regression
 target:
   type: continuous
