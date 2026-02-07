@@ -1,5 +1,5 @@
 dataset: agric_001_sustainability_log
-description: Agriculture dataset - Sustainability_Score. 15 features, single target. Sample fraction: 0.01. Targets in transformed space for fair comparison with GINN-LP/MTRGINN-LP.
+description: "Agriculture dataset - Sustainability_Score. 15 features, single target. Sample fraction: 0.01. Targets in transformed space for fair comparison with GINN-LP/MTRGINN-LP."
 task: regression
 target:
   type: continuous
