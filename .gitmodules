@@ -1,0 +1,9 @@
+[submodule "z_codes/DSR"]
+	path = z_codes/DSR
+	url = https://github.com/dso-org/deep-symbolic-optimization.git
+[submodule "z_codes/AI-Feynman"]
+	path = z_codes/AI-Feynman
+	url = https://github.com/SJ001/AI-Feynman.git
+[submodule "z_codes/BSR"]
+	path = z_codes/BSR
+	url = https://github.com/ying531/MCMC-SymReg.git
