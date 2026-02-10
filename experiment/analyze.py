@@ -141,23 +141,30 @@ if __name__ == '__main__':
                 continue
 
             dataname = os.path.basename(dataset).replace('.tsv.gz', '')
-            # All JSONs go directly under args.RDIR (e.g. ../.results)
+            # Results go into algorithm-specific subdirectories under args.RDIR
             results_path = args.RDIR
             if not os.path.exists(results_path):
                 os.makedirs(results_path)
 
             for ml in learners:
-                # Prefix filename with method name for easy filtering in .results
+                # Determine algorithm folder
                 if 'DSR' in ml:
-                    prefix = 'DSR_'
+                    algo_folder = 'DSR'
                 elif 'BSR' in ml:
-                    prefix = 'BSR_'
+                    algo_folder = 'BSR'
                 elif 'AIF' in ml or 'Feyn' in ml:
-                    prefix = 'AIfey_'
+                    algo_folder = 'AIFeynman'
                 else:
-                    prefix = ''
-                base_name = prefix + dataname + '_' + ml + '_' + str(random_state)
-                save_file = os.path.join(results_path, base_name)
+                    algo_folder = 'Other'
+                
+                # Create algorithm subdirectory if needed
+                algo_results_path = os.path.join(results_path, algo_folder)
+                if not os.path.exists(algo_results_path):
+                    os.makedirs(algo_results_path)
+                
+                # Filename without prefix (since we're in algorithm folder)
+                base_name = dataname + '_' + ml + '_' + str(random_state)
+                save_file = os.path.join(algo_results_path, base_name)
                 # if updated, check if json file exists (required)
                 if ('updated' in suffix 
                     or args.SCRIPT.startswith('fix_')):
@@ -166,7 +173,7 @@ if __name__ == '__main__':
                         continue
 
                 if not args.NOSKIPS:
-                    save_file = os.path.join(results_path, base_name)
+                    # Rebuild save_file path (already includes algo_results_path)
                     if args.Y_NOISE > 0:
                         save_file += '_target-noise'+str(args.Y_NOISE)
                     if args.X_NOISE > 0:

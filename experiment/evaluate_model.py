@@ -284,26 +284,29 @@ def evaluate_model(
     print(json.dumps(results,indent=4))
     print('---')
 
-    if not os.path.exists(results_path):
-        os.makedirs(results_path)
-
-    # Prefix filename with estimator type so files in .results can be grouped easily
+    # Determine algorithm folder (DSR, BSR, or AIFeynman)
     if 'DSR' in est_name:
-        prefix = 'DSR_'
+        algo_folder = 'DSR'
     elif 'BSR' in est_name:
-        prefix = 'BSR_'
+        algo_folder = 'BSR'
     elif 'AIF' in est_name or 'Feyn' in est_name:
-        prefix = 'AIfey_'
+        algo_folder = 'AIFeynman'
     else:
-        prefix = ''
+        algo_folder = 'Other'
 
-    base_name = prefix + dataset_name + '_' + est_name + '_' + str(random_state)
+    # Create algorithm-specific subdirectory
+    algo_results_path = os.path.join(results_path, algo_folder)
+    if not os.path.exists(algo_results_path):
+        os.makedirs(algo_results_path)
+
+    # Filename without prefix (since we're in algorithm folder)
+    base_name = dataset_name + '_' + est_name + '_' + str(random_state)
     if target_noise > 0:
         base_name += '_target-noise' + str(target_noise)
     if feature_noise > 0:
         base_name += '_feature-noise' + str(feature_noise)
 
-    save_file = os.path.join(results_path, base_name)
+    save_file = os.path.join(algo_results_path, base_name)
 
     print('save_file:',save_file)
 
