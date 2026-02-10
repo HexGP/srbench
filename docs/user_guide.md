@@ -61,7 +61,7 @@ Use accordingly.
 After installing and configuring the conda environment, the complete black-box experiment can be started via the command:
 
 ```bash
-python analyze.py /path/to/pmlb/datasets -n_trials 10 -results ../results_blackbox -time_limit 48:00
+python analyze.py /path/to/pmlb/datasets -n_trials 10 -results ../.results/results_blackbox -time_limit 48:00
 ```
 
 ### Ground-truth experiment
@@ -75,7 +75,7 @@ for data in "/path/to/pmlb/datasets/strogatz_" "/path/to/pmlb/datasets/feynman_"
     for TN in 0 0.001 0.01 0.1; do # noise levels
         python analyze.py \
             $data"*" \ #data folder
-            -results ../results_sym_data \ # where the results will be saved
+            -results ../.results/results_sym_data \ # where the results will be saved
             -target_noise $TN \ # level of noise to add
             -sym_data \ # for datasets with symbolic models
             -n_trials 10 \
@@ -101,7 +101,7 @@ for data in "/path/to/pmlb/datasets/strogatz_" "/path/to/pmlb/datasets/feynman_"
         python analyze.py \
             -script assess_symbolic_model \
             $data"*" \ #data folder
-            -results ../results_sym_data \ # where the results will be saved
+            -results ../.results/results_sym_data \ # where the results will be saved
             -target_noise $TN \ # level of noise to add
             -sym_data \ # for datasets with symbolic models
             -n_trials 10 \

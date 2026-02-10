@@ -9,7 +9,7 @@ This document explains (1) what the SRBench repository is and what it does, (2) 
 - **Repo:** SRBench = open-source benchmark for symbolic regression (SR) and ML; paper: La Cava et al., NeurIPS 2021 Datasets and Benchmarks (arXiv:2107.14351). No benchmark code was modified.
 - **Added by user (not in original repo):** Custom data in `data/data_agric/` (agric CSVs) and `data/data_enb/` (ENB2012 Cooling/Heating CSVs). A script `data/csv_to_tsvgz.py` was created to convert the ENB CSVs to the format the benchmark expects (TSV.GZ + folder layout). Outputs: `data/enb_cooling/` and `data/enb_heating/` (each with `*.tsv.gz` + `metadata.yaml`). Agric data was not converted (user has own preprocessing).
 - **Trial:** One trial = one random seed = one run of (dataset, algorithm). Multiple trials = same (dataset, algorithm) repeated with different seeds to get statistics. Paper uses **10 trials** per (dataset, algorithm); Table 2: black-box “Total comparisons 26,840”, ground-truth “Total comparisons 54,600”. Use `-n_trials 10` to match paper; `-n_trials 1` for a quick run.
-- **Run experiments:** From `srbench/experiment/`, e.g. `python analyze.py ../data --local -n_trials 1 -results ../results_enb -time_limit 48:00`. To run only three methods: `-ml tuned.AIFeynman,tuned.BSRRegressor,tuned.DSRRegressor`.
+- **Run experiments:** From `srbench/experiment/`, e.g. `python analyze.py ../data --local -n_trials 1 -results ../.results/results_enb -time_limit 48:00`. To run only three methods: `-ml tuned.AIFeynman,tuned.BSRRegressor,tuned.DSRRegressor`.
 
 ---
 
@@ -122,14 +122,14 @@ Original repo structure, `experiment/`, `algorithms/`, and all benchmark logic a
 Example commands (run from `srbench/experiment/`):
 
 ```bash
-# ENB only, 1 trial per (dataset, algorithm), local, results in ../results_enb
-python analyze.py ../data --local -n_trials 1 -results ../results_enb -time_limit 48:00
+# ENB only, 1 trial per (dataset, algorithm), local, results in ../.results/results_enb
+python analyze.py ../data --local -n_trials 1 -results ../.results/results_enb -time_limit 48:00
 
 # Same but 10 trials (paper standard)
-python analyze.py ../data --local -n_trials 10 -results ../results_enb -time_limit 48:00
+python analyze.py ../data --local -n_trials 10 -results ../.results/results_enb -time_limit 48:00
 
 # Only three methods (e.g. for a class assignment: AIFeynman, BSR, DSR)
-python analyze.py ../data --local -n_trials 1 -results ../results_enb -time_limit 48:00 -ml tuned.AIFeynman,tuned.BSRRegressor,tuned.DSRRegressor
+python analyze.py ../data --local -n_trials 1 -results ../.results/results_enb -time_limit 48:00 -ml tuned.AIFeynman,tuned.BSRRegressor,tuned.DSRRegressor
 ```
 
 - **Regenerating ENB TSV.GZ after changing CSVs:** From `srbench/data/`, run `python csv_to_tsvgz.py`. No SRBench code changes required.
@@ -148,10 +148,10 @@ python analyze.py ../data --local -n_trials 1 -results ../results_enb -time_limi
 
 **Not in metadata.** Each run writes a **single JSON file** on disk. No metadata.yaml is updated with metrics.
 
-**Path pattern:** When you run `analyze.py` with `-results ../results_enb`, the script builds a results directory per dataset: `results_enb/<dataname>/`. For each (dataset, algorithm, seed) it calls `evaluate_model.py`, which writes:
+**Path pattern:** When you run `analyze.py` with `-results ../.results/results_enb`, the script builds a results directory per dataset: `results_enb/<dataname>/`. For each (dataset, algorithm, seed) it calls `evaluate_model.py`, which writes:
 
 - **File path:** `{results_path}/{dataset_name}_{algorithm_name}_{seed}.json`  
-  Example: `../results_enb/enb_cooling/enb_cooling_tuned.AIFeynman_23654.json`
+  Example: `../.results/results_enb/enb_cooling/enb_cooling_tuned.AIFeynman_23654.json`
 
 **What’s inside the JSON (per run):** All of the following are written by `evaluate_model.py` so you can read them later from the JSON:
 
@@ -187,10 +187,10 @@ So evaluation **does** measure and save RMSE and MAPE on the test (and train) da
 
 ```bash
 cd srbench/experiment
-python analyze.py ../data --local -n_trials 1 -results ../results_enb_test -time_limit 48:00 -job_limit 1 -ml LinearRegression
+python analyze.py ../data --local -n_trials 1 -results ../.results/results_enb_test -time_limit 48:00 -job_limit 1 -ml LinearRegression
 ```
 
-If your methods are under `methods/tuned/`, use e.g. `-ml tuned.AIFeynman,tuned.BSRRegressor,tuned.DSRRegressor` and `-job_limit 1` to run only the first of those. Then open the generated `.json` under `../results_enb_test/<dataname>/` and check for `mse_test`, `rmse_test`, `mae_test`, `mape_test`, `r2_test`.
+If your methods are under `methods/tuned/`, use e.g. `-ml tuned.AIFeynman,tuned.BSRRegressor,tuned.DSRRegressor` and `-job_limit 1` to run only the first of those. Then open the generated `.json` under `../.results/results_enb_test/<dataname>/` and check for `mse_test`, `rmse_test`, `mae_test`, `mape_test`, `r2_test`.
 
 ---
 
