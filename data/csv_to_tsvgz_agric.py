@@ -137,7 +137,7 @@ def create_dataset(df, dataset_name, target_col, sample_fraction=0.1):
     metadata_path = os.path.join(out_dir, "metadata.yaml")
     with open(metadata_path, "w") as f:
         f.write(f"dataset: {dataset_name}\n")
-        f.write(f"description: Agriculture dataset - {target_col}. {len(feature_cols)} features, single target. Sample fraction: {sample_fraction}.\n")
+        f.write(f'description: "Agriculture dataset - {target_col}. {len(feature_cols)} features, single target. Sample fraction: {sample_fraction}."\n')
         f.write("task: regression\n")
         f.write("target:\n")
         f.write("  type: continuous\n")

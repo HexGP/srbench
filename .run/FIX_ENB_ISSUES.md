@@ -118,6 +118,20 @@ cd /raid/hussein/project/srbench/z_codes/DSR
 pip install -e ./dso --force-reinstall --no-deps
 ```
 
+## How metrics are computed (vs @codes)
+
+In **@codes** (e.g. `mtr_ginn_sym.py`, `mtr_ginn_agric_sym.py`), the stored metrics are always “equation evaluated on test data”: the symbolic equation is evaluated on `X_test` → `y_pred_sym`, then MSE/MAE/RMSE/MAPE are computed as `scorer(y_test, y_pred_sym)` and saved in JSON (e.g. `symbolic_model_metrics`).
+
+In **SRBench** (`evaluate_model.py`), metrics are computed as `y_pred = est.predict(X)` then `scorer(target, y_pred)` for train and test. So they match @codes only if `est.predict(X)` actually evaluates the learned equation on `X`.
+
+| Method        | `predict(X)` behavior                                                                 | JSON metrics = equation on test? |
+|---------------|----------------------------------------------------------------------------------------|-----------------------------------|
+| **BSR**       | Evaluates the learned trees on `X` via `allcal(roots, test_data)`; returns real predictions. | **Yes** — same as @codes.         |
+| **DSR**       | Placeholder: `return np.zeros(len(X))`.                                                | **No** — metrics are vs zeros.    |
+| **AIFeynman** | Placeholder: `return np.zeros(len(X))`.                                               | **No** — same as DSR.             |
+
+So: BSR JSON metrics are comparable to @codes (equation-on-test). DSR and AIFeynman only store the equation string (`symbolic_model`); the mse/mae/rmse/mape in the JSON are **not** from evaluating that equation on test data (they compare targets to zeros). To align with @codes for DSR and AIFeynman, their `predict(X)` would need to evaluate the stored symbolic expression on `X` and return those values instead of zeros.
+
 ## Checks for a future LLM
 
 When debugging further, it’s worth explicitly verifying:

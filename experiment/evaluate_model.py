@@ -24,7 +24,7 @@ import inspect
 from utils import jsonify
 from symbolic_utils import get_sym_model
 
-from metrics.evaluation import simplicity
+from metrics.evaluation import simplicity, equation_predictions, equation_metrics
 
 import signal
 class TimeOutException(Exception):
@@ -273,6 +273,31 @@ def evaluate_model(
     # RMSE = sqrt(MSE), saved so you can read it directly from JSON
     results['rmse_train'] = float(np.sqrt(results['mse_train'])) if results.get('mse_train') is not None else None
     results['rmse_test'] = float(np.sqrt(results['mse_test'])) if results.get('mse_test') is not None else None
+
+    # Equation-on-test metrics (same as @codes: evaluate learned equation on test/train data)
+    # Uses correct target space: log(y) for agric, raw for enb
+    for key in ['equation_train_mse', 'equation_train_mae', 'equation_train_rmse', 'equation_train_mape',
+                'equation_test_mse', 'equation_test_mae', 'equation_test_rmse', 'equation_test_mape']:
+        results[key] = None
+    try:
+        y_eq_train = equation_predictions(results['symbolic_model'], feature_names, X_train_scaled, est=est, est_name=est_name)
+        y_eq_test = equation_predictions(results['symbolic_model'], feature_names, X_test_scaled, est=est, est_name=est_name)
+        if y_eq_train is not None:
+            m_train = equation_metrics(train_target, y_eq_train)
+            if m_train:
+                results['equation_train_mse'] = m_train['equation_mse']
+                results['equation_train_mae'] = m_train['equation_mae']
+                results['equation_train_rmse'] = m_train['equation_rmse']
+                results['equation_train_mape'] = m_train['equation_mape']
+        if y_eq_test is not None:
+            m_test = equation_metrics(test_target, y_eq_test)
+            if m_test:
+                results['equation_test_mse'] = m_test['equation_mse']
+                results['equation_test_mae'] = m_test['equation_mae']
+                results['equation_test_rmse'] = m_test['equation_rmse']
+                results['equation_test_mape'] = m_test['equation_mape']
+    except Exception as e:
+        print('Warning: equation-on-test metrics failed:', e)
 
     # simplicity
     results['simplicity'] = simplicity(results['symbolic_model'], feature_names)
