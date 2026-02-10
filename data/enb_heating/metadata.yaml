@@ -1,9 +1,9 @@
 dataset: enb_heating
-description: ENB2012 Energy Efficiency - Heating Load. 8 building features, single target.
+description: ENB2012 - Heating Load (Y1). 8 features (X1..X8), single target. Same prep as mtr_ginn_sym.py, no scaling, no split.
 task: regression
 target:
   type: continuous
-  description: Heating load
+  description: Heating Load (Y1)
 features:
   - name: X1
     type: continuous

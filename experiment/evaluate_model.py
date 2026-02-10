@@ -3,7 +3,7 @@ import itertools
 import pandas as pd
 from sklearn.base import clone
 from sklearn.experimental import enable_halving_search_cv # noqa
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 try:
     from sklearn.metrics import mean_absolute_percentage_error
@@ -106,28 +106,58 @@ def evaluate_model(
         else:
             X_train = X_train[sample_idx]
 
-    # scale and normalize the data
-    if scale_x:
-        print('scaling X')
-        sc_X = StandardScaler() 
-        X_train_scaled = sc_X.fit_transform(X_train)
-        X_test_scaled = sc_X.transform(X_test)
+    # ENB and Agric: use MinMaxScaler + 1e-6 (match codes/ENB/mtr_ginn_sym.py, codes/Agriculture/mtr_ginn_agric_sym.py)
+    # Agric only: log-transform targets so models predict in log space
+    is_agric = 'agric' in dataset
+    is_enb = 'enb' in dataset
+    use_y_inverse = scale_y  # whether to inverse-transform predictions when scoring
+    y_test_scaled = None     # set for agric/enb so scoring uses correct target
+
+    if is_agric or is_enb:
+        # X: MinMaxScaler then + 1e-6 (same as reference scripts)
+        X_train_arr = np.asarray(X_train) if not isinstance(X_train, np.ndarray) else X_train
+        X_test_arr = np.asarray(X_test) if not isinstance(X_test, np.ndarray) else X_test
+        sc_X = MinMaxScaler()
+        X_train_scaled = sc_X.fit_transform(X_train_arr) + 1e-6
+        X_test_scaled = sc_X.transform(X_test_arr) + 1e-6
         if use_dataframe:
-            X_train_scaled = pd.DataFrame(X_train_scaled, 
-                                          columns=feature_names)
-            X_test_scaled = pd.DataFrame(X_test_scaled, 
-                                          columns=feature_names)
+            X_train_scaled = pd.DataFrame(X_train_scaled, columns=feature_names)
+            X_test_scaled = pd.DataFrame(X_test_scaled, columns=feature_names)
+        if is_agric:
+            y_train_scaled = np.log(np.asarray(y_train, dtype=np.float64))
+            y_test_scaled = np.log(np.asarray(y_test, dtype=np.float64))
+            use_y_inverse = False  # predictions are in log space; score vs log(y)
+        else:
+            y_train_scaled = np.asarray(y_train) if not isinstance(y_train, np.ndarray) else y_train
+            y_test_scaled = np.asarray(y_test) if not isinstance(y_test, np.ndarray) else y_test
+            use_y_inverse = False
+        print('scaling X with MinMaxScaler+1e-6' + ('; y in log space (agric)' if is_agric else ''))
     else:
-        X_train_scaled = X_train
-        X_test_scaled = X_test
+        # scale and normalize the data (default)
+        if scale_x:
+            print('scaling X')
+            sc_X = StandardScaler()
+            X_train_scaled = sc_X.fit_transform(X_train)
+            X_test_scaled = sc_X.transform(X_test)
+            if use_dataframe:
+                X_train_scaled = pd.DataFrame(X_train_scaled,
+                                              columns=feature_names)
+                X_test_scaled = pd.DataFrame(X_test_scaled,
+                                              columns=feature_names)
+        else:
+            X_train_scaled = X_train
+            X_test_scaled = X_test
 
-
-    if scale_y:
-        print('scaling y')
-        sc_y = StandardScaler()
-        y_train_scaled = sc_y.fit_transform(y_train.reshape(-1,1)).flatten()
-    else:
-        y_train_scaled = y_train
+        if scale_y:
+            print('scaling y')
+            sc_y = StandardScaler()
+            y_train_scaled = sc_y.fit_transform(y_train.reshape(-1,1)).flatten()
+        else:
+            y_train_scaled = y_train
+        if not scale_y:
+            y_test_scaled = y_test
+        else:
+            y_test_scaled = sc_y.transform(y_test.reshape(-1,1)).flatten()
 
 
     ################################################## 
@@ -207,13 +237,15 @@ def evaluate_model(
     # scores
     ##################################################
 
-    for fold, target, X in  [ 
-                             ['train', y_train, X_train_scaled], 
-                             ['test', y_test, X_test_scaled]
-                            ]:
-
-        y_pred = np.asarray(est.predict(X)).reshape(-1,1)
-        if scale_y:
+    # For agric/enb we score in scaled space (log(y) for agric); for default scale_y we score in original space
+    train_target = y_train if use_y_inverse else y_train_scaled
+    test_target = y_test if use_y_inverse else y_test_scaled
+    for fold, target, X in [
+            ['train', train_target, X_train_scaled],
+            ['test', test_target, X_test_scaled]
+    ]:
+        y_pred = np.asarray(est.predict(X)).reshape(-1, 1)
+        if use_y_inverse:
             y_pred = sc_y.inverse_transform(y_pred)
 
         scorers = [
@@ -255,10 +287,23 @@ def evaluate_model(
     if not os.path.exists(results_path):
         os.makedirs(results_path)
 
-    save_file = os.path.join(
-        results_path,
-        '_'.join([dataset_name, est_name, str(random_state)])
-    )
+    # Prefix filename with estimator type so files in .results can be grouped easily
+    if 'DSR' in est_name:
+        prefix = 'DSR_'
+    elif 'BSR' in est_name:
+        prefix = 'BSR_'
+    elif 'AIF' in est_name or 'Feyn' in est_name:
+        prefix = 'AIfey_'
+    else:
+        prefix = ''
+
+    base_name = prefix + dataset_name + '_' + est_name + '_' + str(random_state)
+    if target_noise > 0:
+        base_name += '_target-noise' + str(target_noise)
+    if feature_noise > 0:
+        base_name += '_feature-noise' + str(feature_noise)
+
+    save_file = os.path.join(results_path, base_name)
 
     print('save_file:',save_file)
 

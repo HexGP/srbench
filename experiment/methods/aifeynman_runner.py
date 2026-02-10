@@ -10,7 +10,7 @@ import os
 import tempfile
 
 # Add AI-Feynman to path
-aifeynman_path = '/raid/hussein/project/z_file/AI-Feynman'
+aifeynman_path = '/raid/hussein/project/srbench/z_codes/AI-Feynman'
 if aifeynman_path not in sys.path:
     sys.path.insert(0, aifeynman_path)
 

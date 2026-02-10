@@ -1,6 +1,11 @@
 *.lock.yml
 .idea
 results_*/
+# Agriculture LOG results: keep these so results from another station can be committed
+!results_agric_001_log/
+!results_agric_001_log/**
+!results_agric_01_log/
+!results_agric_01_log/**
 *.swp
 tmp_*
 # Byte-compiled / optimized / DLL files
@@ -11,8 +16,10 @@ __pycache__/
 # C extensions
 *.so
 
-# json
+# json (general); Agriculture LOG result JSONs are allowed below
 *.json
+!results_agric_001_log/**/*.json
+!results_agric_01_log/**/*.json
 
 # Distribution / packaging
 .Python
@@ -61,6 +68,9 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
+
+# SRBench logs directory
+.logs/
 
 # Flask stuff:
 instance/

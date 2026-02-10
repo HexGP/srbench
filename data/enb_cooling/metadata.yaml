@@ -1,9 +1,9 @@
 dataset: enb_cooling
-description: ENB2012 Energy Efficiency - Cooling Load. 8 building features, single target.
+description: ENB2012 - Cooling Load (Y2). 8 features (X1..X8), single target. Same prep as mtr_ginn_sym.py, no scaling, no split.
 task: regression
 target:
   type: continuous
-  description: Cooling load
+  description: Cooling Load (Y2)
 features:
   - name: X1
     type: continuous

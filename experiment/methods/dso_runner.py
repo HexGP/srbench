@@ -9,7 +9,7 @@ import sys
 import os
 
 # Add DSO to path
-dsr_path = '/raid/hussein/project/z_file/DSR/dso'
+dsr_path = '/raid/hussein/project/srbench/z_codes/DSR/dso'
 if dsr_path not in sys.path:
     sys.path.insert(0, dsr_path)
 

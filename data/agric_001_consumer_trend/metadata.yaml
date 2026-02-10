@@ -1,5 +1,5 @@
 dataset: agric_001_consumer_trend
-description: "Agriculture dataset - Consumer_Trend_Index. 15 features, single target. Sample fraction: 0.01."
+description: Agriculture dataset - Consumer_Trend_Index. 15 features, single target. Sample fraction: 0.01.
 task: regression
 target:
   type: continuous

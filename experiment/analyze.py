@@ -48,7 +48,7 @@ if __name__ == '__main__':
             type=int, help='Number of parallel jobs')
     parser.add_argument('-label',action='store',dest='LABEL',default='class',
             type=str,help='Name of class label column')
-    parser.add_argument('-results',action='store',dest='RDIR',default='results',
+    parser.add_argument('-results',action='store',dest='RDIR',default='../.results',
             type=str,help='Results directory')
     parser.add_argument('-q',action='store',dest='QUEUE',
                         default='epistasis_long',
@@ -141,15 +141,23 @@ if __name__ == '__main__':
                 continue
 
             dataname = os.path.basename(dataset).replace('.tsv.gz', '')
-            results_path = os.path.join(args.RDIR, dataname)
-            if not results_path.endswith(os.sep):
-                results_path = results_path + os.sep
+            # All JSONs go directly under args.RDIR (e.g. ../.results)
+            results_path = args.RDIR
             if not os.path.exists(results_path):
                 os.makedirs(results_path)
-                
+
             for ml in learners:
-                save_file = os.path.join(results_path.rstrip(os.sep),
-                                         dataname + '_' + ml + '_' + str(random_state))
+                # Prefix filename with method name for easy filtering in .results
+                if 'DSR' in ml:
+                    prefix = 'DSR_'
+                elif 'BSR' in ml:
+                    prefix = 'BSR_'
+                elif 'AIF' in ml or 'Feyn' in ml:
+                    prefix = 'AIfey_'
+                else:
+                    prefix = ''
+                base_name = prefix + dataname + '_' + ml + '_' + str(random_state)
+                save_file = os.path.join(results_path, base_name)
                 # if updated, check if json file exists (required)
                 if ('updated' in suffix 
                     or args.SCRIPT.startswith('fix_')):
@@ -158,8 +166,7 @@ if __name__ == '__main__':
                         continue
 
                 if not args.NOSKIPS:
-                    save_file = os.path.join(results_path.rstrip(os.sep),
-                                             dataname + '_' + ml + '_' + str(random_state))
+                    save_file = os.path.join(results_path, base_name)
                     if args.Y_NOISE > 0:
                         save_file += '_target-noise'+str(args.Y_NOISE)
                     if args.X_NOISE > 0:

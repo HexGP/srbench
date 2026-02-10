@@ -1,9 +1,13 @@
 """Convert Agriculture CSVs to TSV.GZ in SRBench layout.
 Uses codes/Agriculture/mtr_ginn_agric_sym.py as template (Option 2: merge, then single target).
-Matches MTRGINN-LP preprocessing exactly but stops before:
-- Train/test split (SRBench handles this)
-- Feature scaling (SRBench handles this)
-- Target transformation (SRBench handles this)
+
+Data is prepared the same way as mtr_ginn_agric_sym.py (same CSVs, sampling, merge, columns,
+dropna, categorical encoding, LabelEncoder on Crop_Type and Seasonal_Factor) but:
+- No MinMaxScaler on features (data is not scaled).
+- No log-transform on targets (targets are raw Sustainability_Score / Consumer_Trend_Index).
+- No train/test split here (SRBench does the split when loading).
+
+So the TSV.GZ files in agric_01_*, agric_001_* contain raw, unscaled feature and target values.
 """
 import csv
 import gzip
@@ -113,12 +117,11 @@ def create_dataset(df, dataset_name, target_col, sample_fraction=0.1):
     # Create TSV.GZ file
     tsv_gz_path = os.path.join(out_dir, f"{dataset_name}.tsv.gz")
     
-    # Prepare data: features + target
+    # Prepare data: features + target (use position i, not row index, for target_data)
     data_rows = []
-    for idx, row in df.iterrows():
+    for i, (_, row) in enumerate(df.iterrows()):
         feature_values = [str(row[col]) for col in feature_cols]
-        target_value = str(target_data[idx])
-        data_rows.append(feature_values + [target_value])
+        data_rows.append(feature_values + [str(target_data[i])])
     
     # Write header + data
     with gzip.open(tsv_gz_path, "wt", encoding="utf-8") as f_out:

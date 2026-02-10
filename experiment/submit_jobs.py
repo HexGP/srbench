@@ -14,7 +14,7 @@ if __name__ == '__main__':
                         default='moore_normal')
     parser.add_argument('-n_trials',action='store',dest='TRIALS', default=1)
     parser.add_argument('-results',action='store',dest='RDIR',
-            default='results',type=str,help='Results directory')
+            default='../.results',type=str,help='Results directory')
     args = parser.parse_args()
 
 datapath = args.DATA_PATH 

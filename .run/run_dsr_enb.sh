@@ -18,10 +18,11 @@ sleep 1  # Give tmux time to create the window
 # Build commands and execute ENB datasets in tmux window
 tmux send-keys -t srbench:dsr_enb "cd /raid/hussein/project/srbench/experiment" C-m
 tmux send-keys -t srbench:dsr_enb "conda activate srbench" C-m
+tmux send-keys -t srbench:dsr_enb "mkdir -p ../.logs" C-m
 tmux send-keys -t srbench:dsr_enb "echo 'Starting DSRRegressor on ENB COOLING dataset...'" C-m
-tmux send-keys -t srbench:dsr_enb "python analyze.py ../data/enb_cooling/enb_cooling.tsv.gz --local -n_trials 10 -results ../results_enb -time_limit 48:00 -ml tuned.DSRRegressor -n_jobs 16 > ../data/enb_cooling/enb_cooling_DSR.log 2>&1 &" C-m
+tmux send-keys -t srbench:dsr_enb "python analyze.py ../data/enb_cooling/enb_cooling.tsv.gz --local -n_trials 10 -results ../.results -time_limit 48:00 -ml tuned.DSRRegressor -n_jobs 16 > ../.logs/enb_cooling_DSR.log 2>&1 &" C-m
 tmux send-keys -t srbench:dsr_enb "echo 'Starting DSRRegressor on ENB HEATING dataset...'" C-m
-tmux send-keys -t srbench:dsr_enb "python analyze.py ../data/enb_heating/enb_heating.tsv.gz --local -n_trials 10 -results ../results_enb -time_limit 48:00 -ml tuned.DSRRegressor -n_jobs 16 > ../data/enb_heating/enb_heating_DSR.log 2>&1 &" C-m
+tmux send-keys -t srbench:dsr_enb "python analyze.py ../data/enb_heating/enb_heating.tsv.gz --local -n_trials 10 -results ../.results -time_limit 48:00 -ml tuned.DSRRegressor -n_jobs 16 > ../.logs/enb_heating_DSR.log 2>&1 &" C-m
 tmux send-keys -t srbench:dsr_enb "echo 'All ENB DSRRegressor experiments started. Waiting for completion...'" C-m
 tmux send-keys -t srbench:dsr_enb "wait" C-m
 tmux send-keys -t srbench:dsr_enb "echo 'ENB DSRRegressor experiments completed'" C-m
