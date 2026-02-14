@@ -20,6 +20,7 @@ __pycache__/
 *.json
 !results_agric_001_log/**/*.json
 !results_agric_01_log/**/*.json
+!.results/**/*.json
 
 # Distribution / packaging
 .Python

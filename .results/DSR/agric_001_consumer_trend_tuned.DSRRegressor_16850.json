@@ -1,0 +1,55 @@
+{
+    "dataset": "agric_001_consumer_trend",
+    "algorithm": "tuned.DSRRegressor",
+    "params": {
+        "config": {
+            "task": {
+                "task_type": "regression",
+                "function_set": [
+                    "add",
+                    "sub",
+                    "mul",
+                    "div",
+                    "sin",
+                    "cos",
+                    "exp",
+                    "log"
+                ],
+                "dataset": null
+            },
+            "training": {
+                "n_samples": 1000000,
+                "batch_size": 1000
+            },
+            "experiment": {
+                "logdir": null
+            },
+            "gp_meld": {
+                "run_gp_meld": false
+            },
+            "max_time": 3600
+        }
+    },
+    "random_state": 16850,
+    "time_time": 3600.652996301651,
+    "symbolic_model": "x0",
+    "mse_train": 20.249696459805747,
+    "mae_train": 4.48914207321878,
+    "r2_train": -207.1162997744907,
+    "mape_train": 1.0,
+    "mse_test": 20.11972972625421,
+    "mae_test": 4.475298374353883,
+    "r2_test": -219.04602916337515,
+    "mape_test": 1.0,
+    "rmse_train": 4.499966273185361,
+    "rmse_test": 4.485502171023241,
+    "equation_train_mse": 16.29162349120299,
+    "equation_train_mae": 4.005641073218779,
+    "equation_train_rmse": 4.0362883310292625,
+    "equation_train_mape": 0.891226570928277,
+    "equation_test_mse": 16.079308486261233,
+    "equation_test_mae": 3.9809527303086405,
+    "equation_test_rmse": 4.00990130629935,
+    "equation_test_mape": 0.888588910442526,
+    "simplicity": -0.0
+}

@@ -1,0 +1,55 @@
+{
+    "dataset": "enb_heating",
+    "algorithm": "tuned.DSRRegressor",
+    "params": {
+        "config": {
+            "task": {
+                "task_type": "regression",
+                "function_set": [
+                    "add",
+                    "sub",
+                    "mul",
+                    "div",
+                    "sin",
+                    "cos",
+                    "exp",
+                    "log"
+                ],
+                "dataset": null
+            },
+            "training": {
+                "n_samples": 1000000,
+                "batch_size": 1000
+            },
+            "experiment": {
+                "logdir": null
+            },
+            "gp_meld": {
+                "run_gp_meld": false
+            },
+            "max_time": 3600
+        }
+    },
+    "random_state": 14423,
+    "time_time": 3600.344573497772,
+    "symbolic_model": "x0",
+    "mse_train": 603.8072583061889,
+    "mae_train": 22.42114006514658,
+    "r2_train": -4.972392009094659,
+    "mape_train": 1.0,
+    "mse_test": 581.2830097402597,
+    "mae_test": 21.85292207792208,
+    "r2_test": -4.603656450961779,
+    "mape_test": 1.0,
+    "rmse_train": 24.572489867862167,
+    "rmse_test": 24.10981148288513,
+    "equation_train_mse": 582.2460668733279,
+    "equation_train_mae": 22.014334866811435,
+    "equation_train_rmse": 24.129775524718998,
+    "equation_train_mape": 0.982089172633636,
+    "equation_test_mse": 561.0002250820356,
+    "equation_test_mae": 21.477740702741702,
+    "equation_test_rmse": 23.685443316139043,
+    "equation_test_mape": 0.983570451121286,
+    "simplicity": -0.0
+}
