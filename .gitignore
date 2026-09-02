@@ -1,13 +1,17 @@
 *.lock.yml
 .idea
 results_*/
-# Agriculture LOG results: keep these so results from another station can be committed
-!results_agric_001_log/
-!results_agric_001_log/**
-!results_agric_01_log/
-!results_agric_01_log/**
 *.swp
 tmp_*
+
+# Code-only upload: exclude datasets, model checkpoints, and experiment/model outputs
+/data/
+/results/
+/.results/
+/.results_A/
+/.results_done/
+/.results_old/
+/z_codes_backup/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -16,11 +20,8 @@ __pycache__/
 # C extensions
 *.so
 
-# json (general); Agriculture LOG result JSONs are allowed below
+# json (general)
 *.json
-!results_agric_001_log/**/*.json
-!results_agric_01_log/**/*.json
-!.results/**/*.json
 
 # Distribution / packaging
 .Python
