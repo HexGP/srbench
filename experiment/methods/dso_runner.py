@@ -8,10 +8,26 @@ import numpy as np
 import sys
 import os
 
-# Add DSO to path
-dsr_path = '/raid/hussein/project/srbench/z_codes/DSR/dso'
-if dsr_path not in sys.path:
-    sys.path.insert(0, dsr_path)
+# Add DSO to path: prefer DSR_PATH (matches z_codes/dso_runner.py)
+_ZCODES = os.path.dirname(os.path.abspath(__file__))
+# Try DSR_PATH first (set by dso_bridge.py)
+dsr_path = os.environ.get("DSR_PATH")
+if dsr_path and os.path.isdir(dsr_path):
+    dsr_path = os.path.abspath(dsr_path)
+    if dsr_path not in sys.path:
+        sys.path.insert(0, dsr_path)
+else:
+    # Fallback: try relative to this file (srbench/z_codes/DSR/dso)
+    _default_dsr = os.path.join(_ZCODES, "..", "..", "z_codes", "DSR", "dso")
+    _default_dsr = os.path.abspath(_default_dsr)
+    if os.path.isdir(_default_dsr) and _default_dsr not in sys.path:
+        sys.path.insert(0, _default_dsr)
+    else:
+        # Try parent z_codes (when run from z_codes directly)
+        _parent_z_codes = os.path.join(_ZCODES, "..", "..", "..", "z_codes", "DSR", "dso")
+        _parent_z_codes = os.path.abspath(_parent_z_codes)
+        if os.path.isdir(_parent_z_codes) and _parent_z_codes not in sys.path:
+            sys.path.insert(0, _parent_z_codes)
 
 # Import DSO - use sklearn interface directly
 from dso.task.regression.sklearn import DeepSymbolicRegressor
@@ -49,21 +65,19 @@ def main():
         regressor = DeepSymbolicRegressor(config)
         regressor.fit(X, y)
         
-        # Extract model
+        # Extract model - prefer sympy_expr so SRBench can evaluate equation-on-test metrics
         if hasattr(regressor, 'program_') and regressor.program_ is not None:
-            # Get the program string representation
             program = regressor.program_
-            # Try to get symbolic expression if available
             try:
-                model_str = str(program)
-                # If it's a traversal, try to get the expression
-                if hasattr(program, 'traversal'):
-                    model_str = str(program.traversal)
-                elif hasattr(program, 'sympy_expr'):
+                if hasattr(program, 'sympy_expr'):
                     model_str = str(program.sympy_expr)
-            except:
+                elif hasattr(program, 'traversal'):
+                    model_str = str(program.traversal)
+                else:
+                    model_str = str(program)
+            except Exception:
                 model_str = str(program)
-            complexity = len(model_str)
+            complexity = len(str(model_str))
         else:
             model_str = "x0"
             complexity = 0

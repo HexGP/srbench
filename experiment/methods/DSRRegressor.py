@@ -30,7 +30,7 @@ class DSRRegressor(BaseEstimator, RegressorMixin):
     """Wrapper for DSO that runs via subprocess bridge."""
     
     def __init__(self, config=None):
-        self.config = config if config is None else base_config.copy()
+        self.config = base_config.copy() if config is None else config
         self.model_ = None
         self.complexity_ = 0
         

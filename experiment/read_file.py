@@ -8,9 +8,6 @@ def read_file(filename, label='target', use_dataframe=True, sep=None):
         compression = 'gzip'
     else:
         compression = None
-    
-    print('compression:',compression)
-    print('filename:',filename)
 
     # Auto-detect separator: if filename contains 'tsv', use tab; otherwise try to detect
     if sep is None:

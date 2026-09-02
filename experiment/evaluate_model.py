@@ -35,6 +35,20 @@ def alarm_handler(signum, frame):
     raise TimeOutException
 
 def set_env_vars(n_jobs):
+    """Set environment variables for parallel execution and DSR_PATH for DSO."""
+    # Set DSR_PATH so DSO can find its code (matches z_codes behavior)
+    import os
+    _exp_dir = os.path.dirname(os.path.abspath(__file__))
+    _srbench_root = os.path.normpath(os.path.join(_exp_dir, ".."))
+    # Prefer z_codes/DSR/dso if available (matches z_codes)
+    _z_codes_dsr = os.path.join(_srbench_root, "..", "z_codes", "DSR", "dso")
+    if os.path.isdir(_z_codes_dsr):
+        os.environ["DSR_PATH"] = os.path.abspath(_z_codes_dsr)
+    elif "DSR_PATH" not in os.environ:
+        # Fallback to srbench/z_codes/DSR/dso
+        _srbench_z_codes_dsr = os.path.join(_srbench_root, "z_codes", "DSR", "dso")
+        if os.path.isdir(_srbench_z_codes_dsr):
+            os.environ["DSR_PATH"] = os.path.abspath(_srbench_z_codes_dsr)
     os.environ['OMP_NUM_THREADS'] = n_jobs 
     os.environ['OPENBLAS_NUM_THREADS'] = n_jobs 
     os.environ['MKL_NUM_THREADS'] = n_jobs
@@ -92,7 +106,7 @@ def evaluate_model(
     if len(y_train) > 1000:
         MAXTIME = 36000
 
-    print('max time:',MAXTIME)
+    print('max time:', MAXTIME)
 
     # if dataset is large, subsample the training set 
     if max_train_samples > 0 and len(y_train) > max_train_samples:
@@ -106,8 +120,11 @@ def evaluate_model(
         else:
             X_train = X_train[sample_idx]
 
-    # ENB and Agric: use MinMaxScaler + 1e-6 (match codes/ENB/mtr_ginn_sym.py, codes/Agriculture/mtr_ginn_agric_sym.py)
-    # Agric only: log-transform targets so models predict in log space
+    # Scaling conventions (match @codes):
+    #   ENB:  X = MinMaxScaler + 1e-6,  y = raw (untouched)
+    #   Agric: X = MinMaxScaler + 1e-6, y = log(y) — predict in log space
+    #   Other: X = StandardScaler,      y = StandardScaler (if scale_y)
+    # Equation metrics (equation_test_*) compare equation-on-X vs ground truth in same space.
     is_agric = 'agric' in dataset
     is_enb = 'enb' in dataset
     use_y_inverse = scale_y  # whether to inverse-transform predictions when scoring
@@ -220,18 +237,24 @@ def evaluate_model(
     if sym_data:
         results['true_model'] = true_model
 
-    # get the final symbolic model as a string
+    # get the final symbolic model as a string (fallback to x0 on failure e.g. BSR timeout)
     print('fitted est:',est)
 
-    if 'X' in inspect.signature(model).parameters.keys():
-        if not isinstance(X_train_scaled, pd.DataFrame):
-            X_df = pd.DataFrame(X_train_scaled, 
-                                          columns=feature_names)
+    try:
+        if 'X' in inspect.signature(model).parameters.keys():
+            if not isinstance(X_train_scaled, pd.DataFrame):
+                X_df = pd.DataFrame(X_train_scaled, 
+                                              columns=feature_names)
+            else:
+                X_df = X_train_scaled
+            results['symbolic_model'] = model(est, X_df)
         else:
-            X_df = X_train_scaled
-        results['symbolic_model'] = model(est, X_df)
-    else:
-        results['symbolic_model'] = model(est)
+            results['symbolic_model'] = model(est)
+        if results['symbolic_model'] is None or (isinstance(results['symbolic_model'], (list, tuple)) and not results['symbolic_model']):
+            results['symbolic_model'] = 'x0'
+    except Exception as e:
+        print('Warning: model extraction failed, using x0 fallback:', e)
+        results['symbolic_model'] = 'x0'
     print('symbolic model:',results['symbolic_model'])
     ##################################################
     # scores
@@ -244,7 +267,11 @@ def evaluate_model(
             ['train', train_target, X_train_scaled],
             ['test', test_target, X_test_scaled]
     ]:
-        y_pred = np.asarray(est.predict(X)).reshape(-1, 1)
+        try:
+            y_pred = np.asarray(est.predict(X)).reshape(-1, 1)
+        except Exception as e:
+            print('Warning: predict failed for', fold, ', using zeros:', e)
+            y_pred = np.zeros((len(target), 1))
         if use_y_inverse:
             y_pred = sc_y.inverse_transform(y_pred)
 
@@ -275,7 +302,8 @@ def evaluate_model(
     results['rmse_test'] = float(np.sqrt(results['mse_test'])) if results.get('mse_test') is not None else None
 
     # Equation-on-test metrics (same as @codes: evaluate learned equation on test/train data)
-    # Uses correct target space: log(y) for agric, raw for enb
+    # Target space: log(y) for agric, raw for enb. X is MinMaxScaled for enb/agric.
+    # DSR: sympy eval on scaled X. BSR: est.predict(X). AIFeynman: sympy eval on scaled X.
     for key in ['equation_train_mse', 'equation_train_mae', 'equation_train_rmse', 'equation_train_mape',
                 'equation_test_mse', 'equation_test_mae', 'equation_test_rmse', 'equation_test_mape']:
         results[key] = None

@@ -19,6 +19,8 @@ sleep 1  # Give tmux time to create the window
 # Build commands and execute Agriculture datasets in tmux window
 tmux send-keys -t srbench:dsr_agric_01 "cd /raid/hussein/project/srbench/experiment" C-m
 tmux send-keys -t srbench:dsr_agric_01 "conda activate srbench" C-m
+tmux send-keys -t srbench:dsr_agric_01 "export DSR_PATH=\$(cd .. && pwd)/z_codes/DSR/dso || export DSR_PATH=\$(cd ../.. && pwd)/z_codes/DSR/dso" C-m
+tmux send-keys -t srbench:dsr_agric_01 "export CUDA_VISIBLE_DEVICES=\${CUDA_VISIBLE_DEVICES:-0}" C-m
 tmux send-keys -t srbench:dsr_agric_01 "mkdir -p ../.logs" C-m
 tmux send-keys -t srbench:dsr_agric_01 "echo 'Starting DSRRegressor on AGRICULTURE SUSTAINABILITY (0.1 sample) dataset...'" C-m
 tmux send-keys -t srbench:dsr_agric_01 "python analyze.py ../data/agric_01_sustainability/agric_01_sustainability.tsv.gz --local -n_trials 10 -results ../.results -time_limit 48:00 -ml tuned.DSRRegressor -n_jobs 16 > ../.logs/agric_01_sustainability_DSR.log 2>&1 &" C-m

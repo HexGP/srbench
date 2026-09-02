@@ -18,18 +18,33 @@ fi
 echo "=========================================="
 echo "Installing BSR in srbench environment"
 echo "=========================================="
-cd /raid/hussein/project/srbench/z_codes/BSR
-eval "$(conda shell.bash hook)"
-conda activate srbench
-pip install -e .
+# Try both possible locations for BSR
+for bsr_path in "/raid/hussein/project/srbench/z_codes/BSR" "/raid/hussein/project/z_codes/BSR"; do
+    if [ -d "$bsr_path" ]; then
+        cd "$bsr_path"
+        eval "$(conda shell.bash hook)"
+        conda activate srbench
+        pip install -e .
+        echo "BSR installed from: $bsr_path"
+        break
+    fi
+done
 
 echo ""
 echo "=========================================="
 echo "Rebuilding DSO cython extensions in dso_env"
 echo "=========================================="
-cd /raid/hussein/project/srbench/z_codes/DSR
-conda activate dso_env
-pip install -e ./dso --force-reinstall --no-deps
+# Try both possible locations for DSR
+for dsr_path in "/raid/hussein/project/srbench/z_codes/DSR" "/raid/hussein/project/z_codes/DSR"; do
+    if [ -d "$dsr_path" ]; then
+        cd "$dsr_path"
+        eval "$(conda shell.bash hook)"
+        conda activate dso_env
+        pip install -e ./dso --force-reinstall --no-deps
+        echo "DSO rebuilt from: $dsr_path"
+        break
+    fi
+done
 
 echo ""
 echo "=========================================="

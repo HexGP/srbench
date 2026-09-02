@@ -9,9 +9,28 @@ import json
 import tempfile
 import numpy as np
 
-# Path to the aifeynman_env Python
-AIFEYNMAN_PYTHON = "/raid/hussein/miniconda3/envs/aifeynman_env/bin/python"
-AIFEYNMAN_SCRIPT = "/raid/hussein/project/srbench/experiment/methods/aifeynman_runner.py"
+# Detect aifeynman_env Python path - prefer environment variable, then common locations
+# Try env_alfey first (matches z_codes), then aifeynman_env
+_AIFEYNMAN_ENV_PYTHON = os.environ.get("AIFEYNMAN_PYTHON")
+if not _AIFEYNMAN_ENV_PYTHON:
+    # Try common conda locations
+    for env_name in ["env_alfey", "aifeynman_env"]:
+        for base in ["/raid/hussein/miniconda3/envs", "/home/hussein/miniconda3/envs",
+                     os.path.expanduser("~/miniconda3/envs"), os.path.expanduser("~/anaconda3/envs")]:
+            candidate = os.path.join(base, env_name, "bin", "python")
+            if os.path.exists(candidate):
+                _AIFEYNMAN_ENV_PYTHON = candidate
+                break
+        if _AIFEYNMAN_ENV_PYTHON:
+            break
+    # Fallback to hardcoded if nothing found
+    if not _AIFEYNMAN_ENV_PYTHON:
+        _AIFEYNMAN_ENV_PYTHON = "/raid/hussein/miniconda3/envs/aifeynman_env/bin/python"
+
+AIFEYNMAN_PYTHON = _AIFEYNMAN_ENV_PYTHON
+# Use relative path from this file
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+AIFEYNMAN_SCRIPT = os.path.join(_BASE_DIR, "aifeynman_runner.py")
 
 def run_aifeynman_fit(X, y, config):
     """
@@ -58,6 +77,7 @@ def run_aifeynman_fit(X, y, config):
         try:
             result = subprocess.run(
                 cmd,
+                cwd=_BASE_DIR,  # Set working directory
                 capture_output=True,
                 text=True,
                 timeout=config.get('max_time', 7200),

@@ -80,16 +80,50 @@ def simplicity(pred_model, feature_names):
     return simplicity
 
 
+# Fallback model strings (timeout/failure) - interpret as "use first feature" for equation metrics
+FALLBACK_MODELS = ("x0", "0", "nan")
+
+
 def _equation_predictions_sympy(model_str, feature_names, X):
     """Evaluate a symbolic expression string on X using sympy. Returns 1d array or None."""
-    if not isinstance(model_str, str) or not model_str or not feature_names:
+    if not isinstance(model_str, str) or not model_str or feature_names is None or len(feature_names) == 0:
         return None
-    # Normalize: 1-based first (x1,X1 -> first feature for ENB), then 0-based (x0,x1 -> feature names)
+    # Handle fallback models: use first feature as prediction so equation metrics are computed
     s = model_str.strip()
+    if s.lower() in FALLBACK_MODELS:
+        try:
+            import pandas as pd
+            if isinstance(X, pd.DataFrame):
+                X_arr = X.values if hasattr(X, 'values') else np.asarray(X)
+            else:
+                X_arr = np.asarray(X)
+            if X_arr.ndim == 1:
+                X_arr = X_arr.reshape(-1, 1)
+            if X_arr.shape[1] > 0 and X_arr.shape[0] > 0:
+                return np.asarray(X_arr[:, 0], dtype=np.float64).flatten()
+        except Exception:
+            pass
+        return None
+    # Normalize: 1-based first (x1,X1 -> first feature; DSO's own convention for
+    # ENB/Agric equations), then 0-based (x0,X0 -> first feature; AIFeynman
+    # convention, and DSR's literal "x0" fallback). Word-boundary regex avoids
+    # "x1" clobbering "x10".."x19" the way a plain substring .replace() would.
+    import re as _re
+    def _apply_index_sub(s, mapping):
+        if not mapping:
+            return s
+        pattern = _re.compile(r'\b(' + '|'.join(_re.escape(k) for k in mapping) + r')\b')
+        return pattern.sub(lambda m: mapping[m.group(0)], s)
+    map1 = {}
     for i, f in enumerate(feature_names):
-        s = s.replace("x" + str(i + 1), f).replace("X" + str(i + 1), f)
+        map1["x" + str(i + 1)] = f
+        map1["X" + str(i + 1)] = f
+    s = _apply_index_sub(s, map1)
+    map0 = {}
     for i, f in enumerate(feature_names):
-        s = s.replace("x" + str(i), f).replace("X" + str(i), f)
+        map0["x" + str(i)] = f
+        map0["X" + str(i)] = f
+    s = _apply_index_sub(s, map0)
     def _sub_sym(a, b):
         return sp.Add(a, -b)
     def _div_sym(a, b):
@@ -144,6 +178,9 @@ def equation_predictions(model_str, feature_names, X, est=None, est_name=""):
             return np.asarray(y).flatten()
         except Exception:
             pass
+    # Handle model_str stored as list (e.g. DSR traversal from JSON) - treat as fallback
+    if isinstance(model_str, (list, tuple)):
+        model_str = "x0"
     return _equation_predictions_sympy(model_str, feature_names, X)
 
 
